@@ -1,0 +1,25 @@
+{% extends "signedinbase.html" %}
+
+{% block content %}
+
+<!-- Page Content -->
+<div class="container">
+
+  <h1 class="font-weight-light text-center mt-4 mb-0">Your gallery</h1>
+
+  <hr class="mt-2 mb-5">
+
+  <div class="row text-center text-lg-left">
+
+        {% for img_name in image_names %}
+            <div class="col-lg-3 col-md-4 col-6">
+                <a href="#" class="d-block mb-4 h-100">
+                    <img class="img-fluid img-thumbnail" src="{{url_for('show_image', filename=img_name)}}" alt="">
+                </a>
+            </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "signedinbase.html" %}
+
+{% block content %}
+<div class="container">
+
+    <form id="upload-form" method="POST" action="/upload" enctype="multipart/form-data">
+
+        <h1 class="font-weight-light text-center mt-4 mb-0">Upload images to your gallery</h1>
+
+        <hr class="mt-2 mb-5">
+
+        <div class="form-group row">
+            <input type="file" class="form-control-file" name="image" id="image" accept="image/*" multiple>
+            <div id="msg"></div>
+        </div>
+
+        <div class="form-group row">
+            <label for="directory">Specify directory (optional)</label>
+            <input type="text" class="form-control-file" name="directory" id="directory">
+        </div>
+
+        <div class="form-group row">
+            <label for="caption">Caption</label>
+            <input type="text" class="form-control-file" name="caption" id="caption">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Upload</button>
+
+        <p> {{ msg }} </p>
+
+    </form>
+</div>
+
+<script>
+
+    $("#image").change(function(){
+
+        var input = document.getElementById('image');
+
+        for (var i=0; i<input.files.length; i++)
+        {
+            //for 'example.jpg' this will result a 'jpg'
+            var extension=  input.files[i].name.substring(input.files[i].name.lastIndexOf('.') + 1 ).toLowerCase();
+
+            if ((extension == 'jpg') || (extension == 'png'))
+            {
+                $("#msg").text("Files accepted.")
+            }
+            else
+            {
+                $("#msg").text("ImageService does not support the file types you tried to upload.")
+                document.getElementById('image').value = "";
+            }
+        }
+    } );
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "signedinbase.html" %}
+
+{% block content %}
+
+    <h6>{{ image_name }} was successfully uploaded!</h6>
+
+    <img src="{{url_for('show_image', filename=image_name)}}">
+
+{% endblock %}
