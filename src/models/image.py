@@ -5,13 +5,13 @@ from src.common.database import Database
 
 class Image(object):
 
-    def __init__(self, username: str, caption: str, filename: str, directory: str, _id=None):
+    def __init__(self, username: str, caption: str, filename: str, _id=None):
 
         self._id = self._id = uuid.uuid4().hex if _id is None else _id
         self.username = username # Who owns the image
         self.caption = caption
         self.filename = filename
-        self.directory = directory
+
 
 
     # saving the image in to the database
@@ -25,18 +25,17 @@ class Image(object):
             "_id": self._id,
             "username": self.username,
             "caption": self.caption,
-            "filename": self.filename,
-            "directory": self.directory
+            "filename": self.filename
         }
 
     @classmethod
-    def new_image(cls, username, caption, filename, directory):
+    def new_image(cls, username, caption, filename):
 
         image = Database.find_one(collection='images', query={'username': username, 'filename': filename})
 
         # checks if this filename already exists for this username
         if image is None:
-            new_image = Image(username, caption, filename, directory)
+            new_image = Image(username, caption, filename)
             new_image.save_to_mongo()
             return True
 
@@ -59,5 +58,3 @@ class Image(object):
                                query={'username': username})
 
         return [cls(**image) for image in images]
-
-        # return [image for image in Database.find(collection='images', query={'owner_id': owner_id})]

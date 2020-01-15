@@ -1,15 +1,22 @@
-from flask import Flask, request, url_for, render_template, session, send_from_directory, send_file
+from flask import Flask, request, url_for, render_template, session, send_from_directory, flash
 import os
+from flask_login import LoginManager, login_user, logout_user, current_user
+from werkzeug.utils import redirect
 from src.common.database import Database
 from src.models.image import Image
 from src.models.user import User
 from src.forms import RegistrationForm, LoginForm
+from flask_bcrypt import Bcrypt
+
 
 __author__ = "Elmeri Hyvönen"
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a3cac62b7421cb1dcd4208f9e6c51937'
+bcrypt = Bcrypt(app)
+login_manager = LoginManager(app)
+
 
 # 'src/'
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -23,59 +30,85 @@ def initialize_database():
 
 @app.route('/')
 def home():
-    return render_template("/home.html")
+    return render_template("home.html")
+
+@login_manager.user_loader
+def load_User(user_id):
+    user = User.get_by_id(user_id)
+    if user is not None:
+        return user
+    else:
+        return None
 
 
-@app.route('/login')
+@app.route('/login', methods=['POST', 'GET'])
 def login():
-    form = RegistrationForm
-    return render_template('login.html', msg="")
+
+    # if user is already logged in
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        username = request.form['username']
+        password = request.form['password']
+
+        find_user = Database.find_one('users', {'username': username})
+
+        # checks if the login is valid
+        if User.login_valid(username, password, bcrypt):
+
+            loguser = User(find_user['username'], find_user['password'], find_user['_id'])
+            login_user(loguser, remember=form.remember.data)
+            User.login(username)
+            flash('Login successful', 'success')
+            return redirect(url_for('home'))
+
+        # if login was not valid session['email'] should be None
+        else:
+            session['email'] = None
+            flash('Check your credentials.', 'danger')
+
+    return render_template('login.html', title='Login', form=form)
 
 
-@app.route('/register')
+@app.route('/register', methods=['POST', 'GET'])
 def register():
+
+    # if user is already logged in
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
+
+
     form = RegistrationForm()
+    if form.validate_on_submit():
 
-    return render_template('register.html', msg="")
+        username = form.username.data
+        password = form.password.data
 
+        # creates a hashed password from password that user typed
+        # and decodes it to string. Then we can store the hashed password to database.
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+
+        # if return value is False then the 'username' is already in use
+        if User.register(username, hashed_password):
+            flash(f'Account for: {username} created. You can now log in.', 'success')
+            return redirect(url_for('home'))
+        else:
+            flash(f'Username: {username} is already in use', 'danger')
+
+    return render_template('register.html', form=form)
+
+# ----------------------------------------------------------------------
 
 @app.route('/logout')
 def logout():
     session.clear()
-    return render_template("logged_out.html")
+    logout_user()
+    flash('You have been logged out of ImageService.', 'success')
+    return redirect(url_for('home'))
 
-
-# allows only POST requests
-@app.route('/auth/login', methods=['POST'])
-def login_user():
-    username = request.form['username']
-    password = request.form['password']
-
-    # checks if the login is valid
-    if User.login_valid(username, password):
-        User.login(username)
-
-    # if login was not valid session['email'] should be None
-    else:
-        session['email'] = None
-        return render_template('login.html', msg="Check your credentials.")
-
-    return render_template("signedinbase.html", username=session['username'])
-
-
-# again allows only POST requests
-@app.route('/auth/register', methods=['POST'])
-def register_user():
-
-    username = request.form['username']
-    password = request.form['password']
-
-    # if return value is False then the 'username' is already in use
-    if User.register(username, password):
-        return render_template("profile.html", username=session['username'])
-
-    else:
-        return render_template('register.html', msg="Username is already in use.")
 
 # ----------------------------------------------------------------------
 
@@ -87,16 +120,8 @@ def upload_images():
 
         if request.method == 'POST':
 
-            directory = request.form['directory']
 
-            #target folder
-
-            # if user left the field blank we will save at standard (username) dir
-            if directory == "":
-                target = os.path.join(APP_ROOT, "images/{}/".format(session['username']))
-                directory = session['username']
-            else:
-                target = os.path.join(APP_ROOT, "images/{}/{}/".format(session['username'], directory))
+            target = os.path.join(APP_ROOT, "images/{}/".format(session['username']))
 
             # if the images directory does not exist we will make it
             if not os.path.isdir(target):
@@ -110,29 +135,24 @@ def upload_images():
 
                 destination = ''.join([target, filename])
 
-
                 # verify the file type, we want to save only jpg and png files
                 extension = os.path.splitext(filename)[1].lower()
 
-                if (extension != '.jpg') and (extension != '.png'):
-                    return render_template('upload_image.html', msg="You can upload only .jpg and .png files")
-
+                if (extension != '.jpg') and (extension != '.png') and (extension != '.jpeg'):
+                    flash('You can upload only .jpg, .jpeg and .png files', 'danger')
 
                 # if image was stored in the database (return value was True)
                 # then we will actually save the image in specified location
-                if Image.new_image(session['username'], caption, filename, directory):
+                if Image.new_image(session['username'], caption, filename):
 
                     img.save(destination)
-                    return render_template('upload_image.html', msg="Images uploaded.")
+                    flash('Images uploaded.', 'success')
 
                 #filename was already in the current user directory
                 else:
-                    return render_template('upload_image.html', msg="Image is already uploaded.")
+                    flash('Image is already uploaded.', 'danger')
 
-
-        # if request.method=='GET'
-        else:
-            return render_template('upload_image.html', msg="")
+        return render_template('upload_image.html')
 
     # if user has not logged in then we redirect them to the login page
     else:
@@ -151,8 +171,6 @@ def show_image(filename):
 @app.route('/gallery', methods=['GET'])
 def show_images():
 
-    #image_names = os.listdir('src/images/{}/'.format(session['username']))
-
     images = Image.images_from_mongo(session['username']) # returns a list of image objects for given username
 
     image_file_names = []
@@ -160,9 +178,8 @@ def show_images():
     for image in images:
         image_file_names.append(image.filename)
 
-    print(image_file_names)
-
     return render_template("gallery.html", image_names=image_file_names)
+
 
 
 
