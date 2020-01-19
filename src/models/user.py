@@ -4,14 +4,13 @@ from src.common.database import Database
 from flask_login import UserMixin
 
 
-
 class User(UserMixin):
 
-    def __init__(self, username: str, password: str, _id=None):
+    def __init__(self, username: str, password: str, profile_image=None, _id=None):
         self.username = username
         self.password = password
+        self.profile_image = 'Anonyymi.jpeg' if profile_image is None else profile_image
         self._id = uuid.uuid4().hex if _id is None else _id
-
 
 
     def is_authenticated(self):
@@ -32,8 +31,24 @@ class User(UserMixin):
          return {
             "username": self.username,
             "password": self.password,
+            "profile_image": self.profile_image,
             "_id": self._id
          }
+
+    # method for updating profile information
+    def update_profile(self, new_username, old_username, new_profile_image):
+
+        self.username = new_username
+        self.profile_image = new_profile_image
+
+        Database.update_one(collection="users", query={"_id": self._id},
+                            update={"$set": {"username": self.username,
+                                             "profile_image": self.profile_image}})
+
+        Database.update_many(collection="images", query={"username": old_username},
+                            update={"$set": {"username": new_username,
+                                             "author_pic": new_profile_image}})
+
 
 
     # method for saving users to database
@@ -98,8 +113,6 @@ class User(UserMixin):
             new_user = cls(username, password)
             new_user.save_to_mongo()
 
-            # now we can update the session as well
-            session['username'] = username
             return True
 
         else:

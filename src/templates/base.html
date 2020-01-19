@@ -4,9 +4,14 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Image Service</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>ImageService</title>
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}"/>
+
+    <link rel="shortcut icon" href="static/images_icon.png">
+
 </head>
 
 <body>
@@ -21,10 +26,9 @@
           </button>
           <div class="collapse navbar-collapse" id="navbarToggle">
             <div class="navbar-nav mr-auto">
-              <a class="nav-item nav-link" href="/">Home</a>
               {% if current_user.is_authenticated %}
-                <a class="nav-item nav-link" href="/upload">Upload images</a>
-                <a class="nav-item nav-link" href="/gallery">Gallery</a>
+                <a class="nav-item nav-link" href="/upload">Post new image</a>
+                <a class="nav-item nav-link" href="/gallery">Your Images</a>
               {% endif %}
             </div>
 
@@ -32,6 +36,7 @@
             <div class="navbar-nav">
               {% if current_user.is_authenticated %}
                 <a class="nav-item nav-link" href="/logout">Log out</a>
+                <a class="nav-item nav-link" href="/account">Account</a>
               {% else %}
                 <a class="nav-item nav-link" href="/login">Login</a>
                 <a class="nav-item nav-link" href="/register">Sign up</a>
@@ -41,7 +46,6 @@
         </div>
       </nav>
     </header>
-
     <main role="main" class="container">
         <div class="row">
             <div class="col-md-8">
@@ -54,10 +58,29 @@
                         {% endfor %}
                     {% endif %}
                 {% endwith %}
+
                 {% block content %}{% endblock %}
             </div>
+
+            {% if current_user.is_authenticated %}
+
+            {% else %}
+                <div class="col-md-4">
+                  <div class="content-section">
+                    <h3>ImageService</h3>
+                    <p class='text-muted'>ImageService is fully anonymous platform where you can publish images that you like.
+                      You don't have to share any information about you. Just choose a username, password and profile image if you like, and you are
+                        ready to post images. <br /> <br />
+
+                      <ul class="list-group">
+                      <a href="{{ url_for('register') }}"><li class="btn btn-primary list-group-item list-group-item-light">Join today</li></a>
+                      <a href="{{ url_for('login') }}"><li class="btn btn-primary list-group-item list-group-item-light">Log in</li></a>
+                      </ul>
+                    </p>
+                  </div>
+                </div>
+            {% endif %}
         </div>
-      </div>
     </main>
 
     <!--- Scripts --->

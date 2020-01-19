@@ -1,22 +1,24 @@
-from flask import Flask, request, url_for, render_template, session, send_from_directory, flash
+import secrets
+from PIL import Image
+from flask import Flask, request, url_for, render_template, session, send_from_directory, flash, request, abort
 import os
-from flask_login import LoginManager, login_user, logout_user, current_user
+from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from werkzeug.utils import redirect
 from src.common.database import Database
 from src.models.image import Image
 from src.models.user import User
-from src.forms import RegistrationForm, LoginForm
+from src.forms import RegistrationForm, LoginForm, UpdateProfileForm, PostForm
 from flask_bcrypt import Bcrypt
 
 
 __author__ = "Elmeri Hyvönen"
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a3cac62b7421cb1dcd4208f9e6c51937'
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
-
+login_manager.login_view = 'login'
+login_manager.login_message_category = 'info'
 
 # 'src/'
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -30,7 +32,9 @@ def initialize_database():
 
 @app.route('/')
 def home():
-    return render_template("home.html")
+    return render_template("home.html", images=all_images())
+
+# ---------------------------------------------------------------------------------
 
 @login_manager.user_loader
 def load_User(user_id):
@@ -40,6 +44,7 @@ def load_User(user_id):
     else:
         return None
 
+# ---------------------------------------------------------------------------------
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -59,19 +64,22 @@ def login():
         # checks if the login is valid
         if User.login_valid(username, password, bcrypt):
 
-            loguser = User(find_user['username'], find_user['password'], find_user['_id'])
-            login_user(loguser, remember=form.remember.data)
+            log_user = User(find_user['username'], find_user['password'], find_user['profile_image'], find_user['_id'])
+            login_user(log_user, remember=form.remember.data)
+            next_page = request.args.get('next')
             User.login(username)
             flash('Login successful', 'success')
-            return redirect(url_for('home'))
+
+            return redirect(next_page) if next_page else redirect(url_for('home'))
 
         # if login was not valid session['email'] should be None
         else:
-            session['email'] = None
+            session['username'] = None
             flash('Check your credentials.', 'danger')
 
     return render_template('login.html', title='Login', form=form)
 
+# --------------------------------------------------------------------------------------------------------------------
 
 @app.route('/register', methods=['POST', 'GET'])
 def register():
@@ -79,7 +87,6 @@ def register():
     # if user is already logged in
     if current_user.is_authenticated:
         return redirect(url_for('home'))
-
 
     form = RegistrationForm()
     if form.validate_on_submit():
@@ -93,8 +100,8 @@ def register():
 
         # if return value is False then the 'username' is already in use
         if User.register(username, hashed_password):
-            flash(f'Account for: {username} created. You can now log in.', 'success')
-            return redirect(url_for('home'))
+            flash(f'Account for username: {username}. You can now log in.', 'success')
+            return redirect(url_for('login'))
         else:
             flash(f'Username: {username} is already in use', 'danger')
 
@@ -103,6 +110,7 @@ def register():
 # ----------------------------------------------------------------------
 
 @app.route('/logout')
+@login_required
 def logout():
     session.clear()
     logout_user()
@@ -113,75 +121,160 @@ def logout():
 # ----------------------------------------------------------------------
 
 @app.route('/upload', methods=['GET', 'POST'])
+@login_required
 def upload_images():
 
-    # lets first verify that user has logged in
-    if session['username'] is not None:
+    form = PostForm()
 
-        if request.method == 'POST':
+    if form.validate_on_submit():
 
+        target = os.path.join(APP_ROOT, "images/{}/".format(current_user.username))
 
-            target = os.path.join(APP_ROOT, "images/{}/".format(session['username']))
+        # if the images directory does not exist we have to make it
+        if not os.path.isdir(target):
+            os.mkdir(target)
 
-            # if the images directory does not exist we will make it
-            if not os.path.isdir(target):
-                os.mkdir(target)
+        img = form.picture.data
+        filename = img.filename
+        caption = form.caption.data
 
-            # go through the list of files uploaded by user
-            for img in request.files.getlist("image"):
+        destination = ''.join([target, filename])
 
-                filename = img.filename
-                caption = request.form['caption']
+        # verify the file type, we want to save only jpg, jpeg and png files
+        extension = os.path.splitext(filename)[1].lower()
+        if (extension != '.jpg') and (extension != '.png') and (extension != '.jpeg'):
+            flash('You can upload only .jpg, .jpeg and .png files', 'danger')
+            return redirect(url_for('upload_images'))
 
-                destination = ''.join([target, filename])
+        # if image was stored in the database (return value was True)
+        # then we will save the image in specified location
+        if Image.new_image(current_user.username, caption, filename, current_user.profile_image):
+            img.save(destination)
+            flash('Image posted.', 'success')
+            return render_template('home.html', images=all_images())
 
-                # verify the file type, we want to save only jpg and png files
-                extension = os.path.splitext(filename)[1].lower()
+        #filename was already in the current user directory
+        else:
+            flash('Image is already posted by you.', 'danger')
 
-                if (extension != '.jpg') and (extension != '.png') and (extension != '.jpeg'):
-                    flash('You can upload only .jpg, .jpeg and .png files', 'danger')
-
-                # if image was stored in the database (return value was True)
-                # then we will actually save the image in specified location
-                if Image.new_image(session['username'], caption, filename):
-
-                    img.save(destination)
-                    flash('Images uploaded.', 'success')
-
-                #filename was already in the current user directory
-                else:
-                    flash('Image is already uploaded.', 'danger')
-
-        return render_template('upload_image.html')
-
-    # if user has not logged in then we redirect them to the login page
-    else:
-        return render_template('login.html')
+    return render_template('upload_image.html', form=form, legend='New Post')
 
 
-# return render_template('gallery.html', image_names=os.listdir('src/images/{}/'.format(session['username'])))
+# ------------------------------------------------------------------------------------------------------------
 
+@app.route('/image/<username>/<filename>')
+def show_image(username, filename):
+    return send_from_directory('images/{}/'.format(username), filename)
 
-@app.route('/image/<filename>')
-def show_image(filename):
-
-    return send_from_directory('images/{}'.format(session['username']), filename)
-
+# --------------------------------------------------------------------------------------------------------------
 
 @app.route('/gallery', methods=['GET'])
+@login_required
 def show_images():
 
-    images = Image.images_from_mongo(session['username']) # returns a list of image objects for given username
+    # returns a list of image objects for given username
+    images = Image.images_from_mongo(current_user.username)
+    images.reverse()
 
-    image_file_names = []
+    profile_pic = url_for('static', filename='profile_pics/{}'.format(current_user.profile_image))
 
-    for image in images:
-        image_file_names.append(image.filename)
+    return render_template("gallery.html", images=images, profile_pic=profile_pic)
 
-    return render_template("gallery.html", image_names=image_file_names)
+# ---------------------------------------------------------------------------------------------------------------
 
+@app.route('/account', methods=['GET', 'POST'])
+@login_required
+def account():
 
+    form = UpdateProfileForm()
+    if form.validate_on_submit():
 
+        user1 = User.get_by_username(form.username.data)
+        if user1 and (current_user.username != form.username.data):
+
+            flash(f'Username: {form.username.data} is already in use', 'danger')
+            return redirect(url_for('account'))
+
+        user = User.get_by_username(current_user.username)
+        if form.picture.data:
+            picture_file = save_picture(form.picture.data)
+            old_profile_image = current_user.profile_image
+            current_user.profile_image = picture_file
+
+            # lets remove the file that is no longer needed
+            target = os.path.join(APP_ROOT, "static/profile_pics/{}".format(old_profile_image))
+            os.remove(target)
+
+        old_username = current_user.username
+
+        if form.username.data:
+            current_user.username = form.username.data
+
+        user.update_profile(new_username=current_user.username,
+                            old_username=old_username,
+                            new_profile_image=current_user.profile_image)
+
+        # need to change the image folder name as well if it existed
+        # if there were not any changes in username the folder name stays the same
+        target = os.path.join(APP_ROOT, "images/{}/".format(old_username))
+        if os.path.isdir(target):
+            new_target = os.path.join(APP_ROOT, "images/{}/".format(current_user.username))
+            os.rename(target, new_target)
+
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+
+    profile_pic = url_for('static', filename='profile_pics/{}'.format(current_user.profile_image))
+    return render_template('account.html', title='Account', profile_pic=profile_pic, form=form)
+
+# ---------------------------------------------------------------------------------------------------------------
+
+# makes a random hex filename to avoid situations when there are two files
+# in profile_pics folder with the same name
+def save_picture(profile_pic):
+
+    hex = secrets.token_hex(8)
+    _, file_ext = os.path.splitext(profile_pic.filename)
+    pic_filename = hex + file_ext
+    target = os.path.join(APP_ROOT, "static/profile_pics", pic_filename)
+    profile_pic.save(target)
+    return pic_filename
+
+# ------------------------------------------------------------------------------------------------------------------
+
+@app.route('/image/<image_id>')
+def image(image_id):
+    image = Image.get_by_id(image_id)
+    return render_template('image.html', image=image)
+
+# -------------------------------------------------------------------------------------------------------------------
+
+@app.route('/delete/<image_id>')
+@login_required
+def delete_image(image_id):
+
+    image = Image.get_by_id(image_id)
+    if image.username != current_user.username:
+        abort(403)
+
+    image.delete_image()
+
+    # to save memory we should delete the actual image file as well
+    target = os.path.join(APP_ROOT, "images/{}/{}".format(image.username, image.filename))
+    os.remove(target)
+
+    return render_template("gallery.html", images=Image.images_from_mongo(current_user.username),
+                           profile_pic=url_for('static', filename='profile_pics/{}'.format(current_user.profile_image)))
+
+# -------------------------------------------------------------------------------------------------------------------
+
+# return a list of all images for the front page
+def all_images():
+    images = Image.all_images()
+    images.reverse()
+    return images
+
+# -------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     app.run(debug=True)

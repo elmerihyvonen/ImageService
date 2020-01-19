@@ -1,5 +1,29 @@
 {% extends "base.html" %}
 
 {% block content %}
- <p>Home page - this page is still in development</p>
+
+<!-- Page Content -->
+<div class="container">
+
+  <h2 class="font-weight-light text-center mt-0 mb-0">Home of all images</h2>
+
+  <hr class="mt-2 mb-3">
+
+        {% for image in images %}
+            <article class="media content-section">
+              <img class="rounded-circle account-img"
+                   src="{{ url_for('static', filename='profile_pics/' + image.author_pic) }}">
+              <div class="media-body">
+                <div class="article-metadata">
+                  <a class="mr-2 mt-2 mb-2" href="#">{{ image.username }}</a>
+                  <small class="text-muted">{{ image.date }}</small>
+                </div>
+                <img class="img-thumbnail mt-2 mb-3" src="{{ url_for('show_image', username=image.username, filename=image.filename) }}"  alt="">
+                <p class="article-content">{{ image.caption }}</p>
+              </div>
+            </article>
+        {% endfor %}
+
+</div>
+
 {% endblock %}

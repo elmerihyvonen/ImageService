@@ -1,26 +1,41 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
+<div class="content-section">
 
-    <form id="upload-form" method="POST" action="/upload" enctype="multipart/form-data">
+    <form method="POST" action="/upload" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom md-4">{{ legend }}</legend>
+            <div class="form-group">
 
-        <h1 class="font-weight-light text-center mt-4 mb-0">Upload images to your gallery</h1>
+                {{ form.picture.label() }}
+                {{ form.picture(class="form-control-file") }}
 
-        <hr class="mt-2 mb-5">
+                {% if form.picture.errors %}
+                    {% for error in form.picture.errors %}
+                        <span class="text-danger">{{ error }}</span> <br />
+                    {% endfor %}
+                {% endif %}
 
-        <div class="form-group row">
-            <input type="file" class="form-control-file" name="image" id="image" accept="image/*" multiple>
-            <div id="msg"></div>
+            </div>
+            <div class="form-group">
+                {{ form.caption.label(class="form-control-label") }}
+                {% if form.caption.errors %}
+                    {{ form.caption(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.caption.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.caption(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
         </div>
-
-        <div class="form-group row">
-            <label for="caption">Caption</label>
-            <input type="text" class="form-control-file" name="caption" id="caption">
-        </div>
-
-        <button type="submit" class="btn btn-primary">Upload</button>
-
     </form>
 </div>
 

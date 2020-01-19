@@ -5,21 +5,24 @@
 <!-- Page Content -->
 <div class="container">
 
-  <h1 class="font-weight-light text-center mt-4 mb-0">Your gallery</h1>
+  <h3 class="font-weight-light text-center mt-1 mb-0">Your posts</h3>
 
-  <hr class="mt-2 mb-5">
+  <hr class="mt-2 mb-3">
 
-  <div class="row text-center text-lg-left">
-
-        {% for img_name in image_names %}
-            <div class="col-lg-3 col-md-4 col-6">
-                <a href="#" class="d-block mb-4 h-100">
-                    <img class="img-fluid img-thumbnail" src="{{url_for('show_image', filename=img_name)}}" alt="">
-                </a>
-            </div>
+        {% for image in images %}
+            <article class="media content-section">
+              <img class="rounded-circle account-img" src="{{ profile_pic }}">
+              <div class="media-body">
+                <div class="article-metadata">
+                  <a class="mr-2" href="#">{{ image.username }}</a>
+                  <small class="text-muted">{{ image.date }}</small>
+                </div>
+                  <a href="{{ url_for('image', image_id=image._id) }}"><img class="img-thumbnail" src="{{ url_for('show_image', username=image.username, filename=image.filename) }}"  alt=""></a>
+                  <p class="article-content">{{ image.caption }}</p>
+              </div>
+            </article>
         {% endfor %}
 
-    </div>
 </div>
 
 {% endblock %}
