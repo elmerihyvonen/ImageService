@@ -291,9 +291,10 @@ def delete_account(user_id):
     target = os.path.join(APP_ROOT, "images/{}".format(user.username))
     shutil.rmtree(target)
 
-    # and lets delete the profile_pic as well
-    target2 = os.path.join(APP_ROOT, "static/profile_pics/{}".format(user.profile_image))
-    os.remove(target2)
+    # delete the profile_pic as well
+    if user.profile_image != 'Anonyymi.jpeg':
+        target2 = os.path.join(APP_ROOT, "static/profile_pics/{}".format(user.profile_image))
+        os.remove(target2)
 
     # log out
     session.clear()
