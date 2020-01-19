@@ -84,4 +84,9 @@ class Image(object):
 
     # removes a image from database with given identifier if one exists in database
     def delete_image(self):
-        Database.delete_one(collection='images', query={'_id': self._id})
+        Database.delete(collection='images', query={'_id': self._id})
+
+    @classmethod
+    def delete_images(cls, username):
+        Database.delete(collection='images', query={'username': username})
+

@@ -2,6 +2,7 @@ import secrets
 from PIL import Image
 from flask import Flask, request, url_for, render_template, session, send_from_directory, flash, request, abort
 import os
+import shutil
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
 from werkzeug.utils import redirect
 from src.common.database import Database
@@ -202,8 +203,9 @@ def account():
             current_user.profile_image = picture_file
 
             # lets remove the file that is no longer needed
-            target = os.path.join(APP_ROOT, "static/profile_pics/{}".format(old_profile_image))
-            os.remove(target)
+            if old_profile_image != 'Anonyymi.jpeg':
+                target = os.path.join(APP_ROOT, "static/profile_pics/{}".format(old_profile_image))
+                os.remove(target)
 
         old_username = current_user.username
 
@@ -249,6 +251,7 @@ def image(image_id):
 
 # -------------------------------------------------------------------------------------------------------------------
 
+
 @app.route('/delete/<image_id>')
 @login_required
 def delete_image(image_id):
@@ -276,5 +279,30 @@ def all_images():
 
 # -------------------------------------------------------------------------------------------------------------------
 
+@app.route('/account/delete/<user_id>')
+@login_required
+def delete_account(user_id):
+
+    user = User.get_by_id(user_id)
+    User.delete_user(user_id)
+    Image.delete_images(user.username)
+
+    # lets delete the user's image folder to save memory
+    target = os.path.join(APP_ROOT, "images/{}".format(user.username))
+    shutil.rmtree(target)
+
+    # and lets delete the profile_pic as well
+    target2 = os.path.join(APP_ROOT, "static/profile_pics/{}".format(user.profile_image))
+    os.remove(target2)
+
+    # log out
+    session.clear()
+    logout_user()
+
+    flash('Your account and all images associated with it are now deleted', "success")
+    return render_template("home.html", images=all_images())
+
+
+# --------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     app.run(debug=True)

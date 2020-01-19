@@ -134,4 +134,6 @@ class User(UserMixin):
         # if match was not found we will return None
         return None
 
-
+    @classmethod
+    def delete_user(cls, user_id):
+        Database.delete(collection='users', query={'_id': user_id})

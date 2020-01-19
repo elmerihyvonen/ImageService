@@ -2,7 +2,7 @@ import pymongo
 
 
 class Database(object):
-    URI = "mongodb://127.0.0.1:27017" #default address and port for the database
+    URI = "mongodb://127.0.0.1:27017"  # default address and port for the database
     DATABASE = None
 
     @staticmethod
@@ -31,5 +31,6 @@ class Database(object):
         return Database.DATABASE[collection].update_many(query, update)
 
     @staticmethod
-    def delete_one(collection, query):
+    def delete(collection, query):
         Database.DATABASE[collection].remove(query)
+
