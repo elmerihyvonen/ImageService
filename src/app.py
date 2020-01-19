@@ -1,5 +1,4 @@
 import secrets
-from PIL import Image
 from flask import Flask, url_for, render_template, session, send_from_directory, flash, request, abort
 import os
 import shutil
