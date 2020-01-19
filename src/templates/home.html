@@ -18,7 +18,7 @@
                   <a class="mr-2 mt-2 mb-2" href="#">{{ image.username }}</a>
                   <small class="text-muted">{{ image.date }}</small>
                 </div>
-                <img class="img-thumbnail mt-2 mb-3" src="{{ url_for('show_image', username=image.username, filename=image.filename) }}"  alt="">
+                <a href="{{ url_for('show_image', username=image.username, filename=image.filename) }}"><img class="img-thumbnail mt-2 mb-3" src="{{ url_for('show_image', username=image.username, filename=image.filename) }}"  alt=""></a>
                 <p class="article-content">{{ image.caption }}</p>
               </div>
             </article>

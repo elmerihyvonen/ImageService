@@ -63,24 +63,27 @@
                 {% block content %}{% endblock %}
             </div>
 
-            {% if current_user.is_authenticated %}
 
-            {% else %}
-                <div class="col-md-4">
-                  <div class="content-section">
-                    <h3>ImageService</h3>
-                    <p class='text-muted'>ImageService is fully anonymous platform where you can publish images that you like.
-                      You don't have to share any information about you. Just choose a username, password and profile image if you like, and you are
-                        ready to post images. <br /> <br />
+            <div class="col-md-4">
+              <div class="content-section">
+                <h3>ImageService</h3>
+                <p class='text-muted'>ImageService is fully anonymous platform where you can publish images that you like.
+                  You don't have to share any information about you. Just choose a username, password and profile image if you like, and you are
+                    ready to post images. <br /> <br />
 
-                      <ul class="list-group">
+                  {% if current_user.is_authenticated %}
+
+                  {% else %}
+                    <ul class="list-group">
                       <a href="{{ url_for('register') }}"><li class="btn btn-primary list-group-item list-group-item-light">Join today</li></a>
                       <a href="{{ url_for('login') }}"><li class="btn btn-primary list-group-item list-group-item-light">Log in</li></a>
-                      </ul>
-                    </p>
-                  </div>
-                </div>
-            {% endif %}
+                    </ul>
+                  {% endif %}
+
+                </p>
+              </div>
+            </div>
+
         </div>
     </main>
 

@@ -1,6 +1,6 @@
 import secrets
 from PIL import Image
-from flask import Flask, request, url_for, render_template, session, send_from_directory, flash, request, abort
+from flask import Flask, url_for, render_template, session, send_from_directory, flash, request, abort
 import os
 import shutil
 from flask_login import LoginManager, login_user, logout_user, current_user, login_required
@@ -35,7 +35,7 @@ def initialize_database():
 def home():
     return render_template("home.html", images=all_images())
 
-# ---------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 
 @login_manager.user_loader
 def load_User(user_id):
@@ -45,7 +45,7 @@ def load_User(user_id):
     else:
         return None
 
-# ---------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
@@ -108,7 +108,7 @@ def register():
 
     return render_template('register.html', form=form)
 
-# ----------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------------------------
 
 @app.route('/logout')
 @login_required
@@ -119,7 +119,7 @@ def logout():
     return redirect(url_for('home'))
 
 
-# ----------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------
 
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required

@@ -15,12 +15,10 @@ class Image(object):
         self.author_pic = author_pic
         self.date = datetime.datetime.now().strftime("%d/%m/%Y, %H:%M") if date is None else date
 
-
     # saving the image in to the database
     def save_to_mongo(self):
         Database.insert(collection="images",
                         data=self.json())
-
 
     def json(self):
         return {
@@ -31,7 +29,6 @@ class Image(object):
             "author_pic": self.author_pic,
             "date": self.date
         }
-
 
     # saves new image to database
     @classmethod
@@ -49,13 +46,11 @@ class Image(object):
             # return False if the image was already there
             return False
 
-
     # returns a single Image object for given filename
     @classmethod
     def image_from_mongo(cls, filename):
         image_data = Database.find_one(collection='images', query={'filename': filename})
         return cls(**image_data)
-
 
 
     # returns all images posted by given username
@@ -74,7 +69,6 @@ class Image(object):
         images = Database.find(collection="images", query={})
 
         return [cls(**image) for image in images]
-
 
     # returns a single Image object for given _id
     @classmethod
