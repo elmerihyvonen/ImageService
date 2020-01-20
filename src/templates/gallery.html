@@ -16,6 +16,11 @@
                 <div class="article-metadata">
                   <a class="mr-2" href="#">{{ image.username }}</a>
                   <small class="text-muted">{{ image.date }}</small>
+
+                  <div>
+                    <a class="btn btn-danger btn-sm mt-1 mb-1" href="{{ url_for('delete_image', image_id=image._id) }}">Delete image</a>
+                  </div>
+                    
                 </div>
                   <a href="{{ url_for('image', image_id=image._id) }}"><img class="img-thumbnail" src="{{ url_for('show_image', filename=image.filename) }}"  alt=""></a>
                   <p class="article-content">{{ image.caption }}</p>
