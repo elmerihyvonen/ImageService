@@ -128,7 +128,7 @@ def upload_images():
 
     if form.validate_on_submit():
 
-        target = os.path.join(APP_ROOT, "images/")
+        target = os.path.join(APP_ROOT, "static/images/")
 
         img = form.picture.data
         filename = img.filename
