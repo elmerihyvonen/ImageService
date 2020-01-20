@@ -242,13 +242,11 @@ def image(image_id):
 def delete_image(image_id):
 
     image = Image.get_by_id(image_id)
-    if image.username != current_user.username:
-        abort(403)
 
     image.delete_image()
 
     # to save memory we should delete the actual image file as well
-    target = os.path.join(APP_ROOT, "images/{}".format(image.filename))
+    target = os.path.join(APP_ROOT, "static/images/{}".format(image.filename))
     os.remove(target)
 
     return render_template("gallery.html", images=Image.images_from_mongo(current_user.username),
