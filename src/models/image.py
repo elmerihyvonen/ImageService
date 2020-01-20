@@ -70,6 +70,7 @@ class Image(object):
 
         return [cls(**image) for image in images]
 
+
     # returns a single Image object for given _id
     @classmethod
     def get_by_id(cls, image_id):

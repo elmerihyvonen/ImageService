@@ -16,7 +16,7 @@
           </div>
 
         </div>
-        <a href="{{ url_for('show_image', username=image.username, filename=image.filename) }}"><img class="img-thumbnail" src="{{ url_for('show_image', username=image.username, filename=image.filename) }}"  alt=""></a>
+        <a href="{{ url_for('show_image', filename=image.filename) }}"><img class="img-thumbnail" src="{{ url_for('show_image', filename=image.filename) }}"  alt=""></a>
         <p class="article-content">{{ image.caption }}</p>
       </div>
     </article>

@@ -128,11 +128,7 @@ def upload_images():
 
     if form.validate_on_submit():
 
-        target = os.path.join(APP_ROOT, "images/{}/".format(current_user.username))
-
-        # if the images directory does not exist we have to make it
-        if not os.path.isdir(target):
-            os.mkdir(target)
+        target = os.path.join(APP_ROOT, "images/")
 
         img = form.picture.data
         filename = img.filename
@@ -162,9 +158,9 @@ def upload_images():
 
 # ------------------------------------------------------------------------------------------------------------
 
-@app.route('/image/<username>/<filename>')
-def show_image(username, filename):
-    return send_from_directory('images/{}/'.format(username), filename)
+@app.route('/image/<filename>')
+def show_image(filename):
+    return send_from_directory('static/images/', filename)
 
 # --------------------------------------------------------------------------------------------------------------
 
@@ -215,13 +211,6 @@ def account():
                             old_username=old_username,
                             new_profile_image=current_user.profile_image)
 
-        # need to change the image folder name as well if it existed
-        # if there were not any changes in username the folder name stays the same
-        target = os.path.join(APP_ROOT, "images/{}/".format(old_username))
-        if os.path.isdir(target):
-            new_target = os.path.join(APP_ROOT, "images/{}/".format(current_user.username))
-            os.rename(target, new_target)
-
     elif request.method == 'GET':
         form.username.data = current_user.username
 
@@ -262,7 +251,7 @@ def delete_image(image_id):
     image.delete_image()
 
     # to save memory we should delete the actual image file as well
-    target = os.path.join(APP_ROOT, "images/{}/{}".format(image.username, image.filename))
+    target = os.path.join(APP_ROOT, "images/{}".format(image.filename))
     os.remove(target)
 
     return render_template("gallery.html", images=Image.images_from_mongo(current_user.username),
@@ -284,11 +273,14 @@ def delete_account(user_id):
 
     user = User.get_by_id(user_id)
     User.delete_user(user_id)
+
+    images = Image.images_from_mongo(user.username)
     Image.delete_images(user.username)
 
-    # lets delete the user's image folder to save memory
-    target = os.path.join(APP_ROOT, "images/{}".format(user.username))
-    shutil.rmtree(target)
+    # delete images from folder
+    for image in images:
+        target = os.path.join(APP_ROOT, 'static/images/{}'.format(image.filename))
+        os.remove(target)
 
     # delete the profile_pic as well
     if user.profile_image != 'Anonyymi.jpeg':
