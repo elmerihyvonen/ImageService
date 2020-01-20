@@ -229,7 +229,7 @@ def save_picture(profile_pic):
 
 # ------------------------------------------------------------------------------------------------------------------
 
-@app.route('/image/<image_id>')
+@app.route('/gallery/image/<image_id>')
 def image(image_id):
     image = Image.get_by_id(image_id)
     return render_template("image.html", image=image)
