@@ -128,13 +128,9 @@ def upload_images():
 
     if form.validate_on_submit():
 
-        target = os.path.join(APP_ROOT, "static/images/")
-
         img = form.picture.data
         filename = img.filename
         caption = form.caption.data
-
-        destination = ''.join([target, filename])
 
         # verify the file type, we want to save only jpg, jpeg and png files
         extension = os.path.splitext(filename)[1].lower()
@@ -145,7 +141,8 @@ def upload_images():
         # if image was stored in the database (return value was True)
         # then we will save the image in specified location
         if Image.new_image(current_user.username, caption, filename, current_user.profile_image):
-            img.save(destination)
+            target = os.path.join(APP_ROOT, "static/images", filename)
+            img.save(target)
             flash('Image posted.', 'success')
             return render_template('home.html', images=all_images())
 
