@@ -1,6 +1,7 @@
 import pymongo
 import os
 
+# replace with sql based solution - perhaps mariadb container? or mysqlserver?
 
 class Database(object):
     URI = os.environ.get("mongodb://mongoadmin:secret@mongodb")   # default address and port for the database
