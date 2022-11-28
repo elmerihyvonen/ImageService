@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+  mongo:
+    image: mongo:latest
+    # command: --serviceExecutor adaptive
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongoadmin
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+      #- MONGODB_CONNSTRING=mongodb://mongoadmin:secret@imageservice20-mongo-1 . TÄMÄ TULEE PYTHON APP käyttöön
+    ports:
+      - 3000:3000
+
+  websrv:
+    image: imageservice-dev:latest
+    environment:
+      - MONGODB_CONNSTRING=mongodb://mongoadmin:secret@mongodb
+      
