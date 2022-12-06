@@ -46,9 +46,7 @@ RUN python3 -m pip install --upgrade Pillow
 
 WORKDIR /imageservice-flask-test
 
-ADD . /imageservice-flask-test
-
-ENV FLASK_APP=app.py
+ENV FLASK_APP=src/app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 
 #Server will reload itself on file changes if in dev mode

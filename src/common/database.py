@@ -1,16 +1,14 @@
 import pymongo
-import os
 
 # replace with sql based solution - perhaps mariadb container? or mysqlserver?
 
-class Database(object):
-    URI = os.environ.get("mongodb://mongoadmin:secret@mongodb")   # default address and port for the database
+class Database(object): 
     DATABASE = None
 
     @staticmethod
     def initialize():
-        client = pymongo.MongoClient(Database.URI)
-        Database.DATABASE = client.get_default_database()
+        client = pymongo.MongoClient("mongodb://mongoadmin:secret@mdb:27017/")
+        Database.DATABASE = client.get_database("is-db")
 
     @staticmethod
     def insert(collection, data):
