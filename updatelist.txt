@@ -1,0 +1,15 @@
+SECRET_KEY=secretkey
+
+Flask requires a secret key to be used:
+KeyError: 'A secret key is required to use CSRF.'
+
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') / line 17 app.py
+
+--> So we should perhaps consider env variables for all docker comtainers and access them in python by simply calling os.environ
+
+Some kind on docker secrets solution would be possible ass well.
+
+
+CSRF problem solved and rest of the endpoint became accessibe
+
+functionality tested - > seems to be working

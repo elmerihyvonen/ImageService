@@ -27,7 +27,7 @@ services:
       - .env
 
   websrv:
-    image: imageservice:2.0.3
+    image: imageservice:2.0.4
     container_name: imageservice
     env_file:
       - .env

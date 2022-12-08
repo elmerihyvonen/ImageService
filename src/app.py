@@ -14,7 +14,12 @@ from flask_bcrypt import Bcrypt
 __author__ = "Elmeri Hyvönen"
 
 app = Flask(__name__)
+
+if __name__ == "__main__":
+    app.run(ssl_context='adhoc')
+
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'

@@ -1,4 +1,5 @@
 import pymongo
+import os
 
 # replace with sql based solution - perhaps mariadb container? or mysqlserver?
 
@@ -7,8 +8,10 @@ class Database(object):
 
     @staticmethod
     def initialize():
-        client = pymongo.MongoClient("mongodb://mongoadmin:secret@mdb:27017/")
+        client = pymongo.MongoClient(os.environ.get('MONGO_URL'))
         Database.DATABASE = client.get_database("is-db")
+    
+
 
     @staticmethod
     def insert(collection, data):
