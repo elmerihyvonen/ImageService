@@ -13,3 +13,9 @@ Some kind on docker secrets solution would be possible ass well.
 CSRF problem solved and rest of the endpoint became accessibe
 
 functionality tested - > seems to be working
+
+contabo vps + public ip + object storage image saving + backup solution for database dumps
+
+consider:
+-sql instead of mongo
+-options for storage (purpose to save images or zipped images)
