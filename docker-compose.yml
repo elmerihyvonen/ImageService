@@ -19,8 +19,8 @@ services:
     image: mongo-express
     container_name: mongo-express
     restart: always
-    depends_on:
-      - mdb
+#    depends_on:
+ #     - mdb
     ports:
       - 8081:8081
     env_file:
@@ -34,5 +34,18 @@ services:
     ports:
       - 3333:8000
     volumes:
-      - .:/imageservice-flask-test
+      - .:/imageservice
+  
+  
+  vault-server:
+    image: vault:dev
+    container_name: vault-server
+    ports:
+      - 8200:8200
+    volumes:
+      - ./file:/vault/file:rw
+      - ./config:/vault/config:rw
+    cap_add:
+      - IPC_LOCK
+    entrypoint: vault server -config=/vault/config/vault-config.json
       

@@ -1,0 +1,15 @@
+{
+    "api_addr": "http://89.117.63.192:8200",
+    "ui": true,
+    "storage": {
+        "file": {
+            "path": "/vault/file"
+        }
+    },
+    "listener": {
+        "tcp": {
+            "address": "0.0.0.0:8200",
+            "tls_disable": true
+        }
+    }
+}

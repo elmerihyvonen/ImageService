@@ -146,8 +146,13 @@ def upload_images():
         # if image was stored in the database (return value was True)
         # then we will save the image in specified location
         if Image.new_image(current_user.username, caption, filename, current_user.profile_image):
+
+            # instead of saving to static/images we will do a temporary save to another FS location
+            # after that aws s3 mv to preconfigured object storage / perhaps local s3 bucket? no need for extra sub
+
             target = os.path.join(APP_ROOT, "static/images", filename)
             img.save(target)
+
             flash('Image posted.', 'success')
             return render_template('home.html', images=all_images())
 

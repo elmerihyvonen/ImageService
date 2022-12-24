@@ -10,8 +10,6 @@ class Database(object):
     def initialize():
         client = pymongo.MongoClient(os.environ.get('MONGO_URL'))
         Database.DATABASE = client.get_database("is-db")
-    
-
 
     @staticmethod
     def insert(collection, data):
