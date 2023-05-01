@@ -6,7 +6,7 @@ chardet==3.0.4
 Click==7.0
 connection==2019.4.13
 dnspython==1.16.0
-Flask==1.1.1
+Flask==2.3.2
 Flask-Bcrypt==0.7.1
 Flask-Login==0.4.1
 Flask-PyMongo==2.3.0
